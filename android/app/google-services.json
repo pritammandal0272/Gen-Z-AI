@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "947469660128",
+    "project_id": "gen-z-ai-facee",
+    "storage_bucket": "gen-z-ai-facee.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:947469660128:android:2c179b700d9b0ba95e0585",
+        "android_client_info": {
+          "package_name": "com.example.voice_assistant"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAspsRp3bf3lHpCw9jediVT788NIuP0imY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
