@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:voice_assistant/controller/dataBase/readValuesDB.dart';
+import 'package:voice_assistant/controller/firebaseController/firebaseController.dart';
 import 'package:voice_assistant/controller/functions/googleLogin.dart';
 import 'package:voice_assistant/controller/getxController.dart';
 import 'package:voice_assistant/screens/sharePreference/loginScreen.dart';
@@ -281,19 +282,23 @@ class LoginBottomSheetState extends State<LoginBottomSheet> {
                         borderRadius: BorderRadius.circular(16),
                       ),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          'Login',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        SizedBox(width: 8),
-                        Icon(Icons.arrow_forward),
-                      ],
+                    child: Obx(
+                      () => getxObj.isLogedInLoader.value
+                          ? CircularProgressIndicator(color: Colors.white)
+                          : Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  'Login',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                SizedBox(width: 8),
+                                Icon(Icons.arrow_forward),
+                              ],
+                            ),
                     ),
                   ),
                 ),
@@ -388,36 +393,14 @@ class LoginBottomSheetState extends State<LoginBottomSheet> {
   }
 
   void _signInUser(email, password) async {
-    bool chekUserExits = await checkUserExists(email);
-    if (chekUserExits) {
-      showSnackbarFunction(
-        context,
-        "Invalid Email or Phone No !!",
-        Colors.red,
-        Icons.info,
+    final signinData = {"email": email, "password": password};
+    bool check = await FirebaseController.loginFirebase(context, signinData);
+    if (check) {
+      await sp.setString("isEmail", email);
+      Get.offAll(
+        () => MainScreen(data: {"email": email}),
+        transition: Transition.zoom,
       );
-    } else {
-      bool check = await checkUserLogin(email, password);
-      if (check) {
-        await sp.setString("isEmail", email);
-        Get.offAll(
-          () => MainScreen(data: {"email": email}),
-          transition: Transition.zoom,
-        );
-        showSnackbarFunction(
-          context,
-          "Login Successfully !!",
-          Colors.blue,
-          Icons.check_circle_outline,
-        );
-      } else {
-        showSnackbarFunction(
-          context,
-          "Invalid Email or Phone No & Password!!",
-          Colors.red,
-          Icons.info,
-        );
-      }
     }
   }
 }

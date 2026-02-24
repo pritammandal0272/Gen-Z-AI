@@ -4,6 +4,10 @@ import 'package:voice_assistant/screens/internetCheck.dart';
 
 class getController extends GetxController {
   RxList logInUserData = RxList(); //LogedIn User Data
+  RxBool isLogedInLoader = false.obs;
+  RxBool isChangeEmailLoader = false.obs;
+  RxBool isChangePasswordLoader = false.obs;
+
 
   RxBool isListening = false.obs;
   RxString gminiAns = "".obs;

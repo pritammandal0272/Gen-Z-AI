@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:text_gradiate/text_gradiate.dart';
 import 'package:voice_assistant/auth/dummyData.dart';
 import 'package:voice_assistant/controller/dataBase/updateValues.dart';
+import 'package:voice_assistant/controller/firebaseController/firebaseController.dart';
 import 'package:voice_assistant/controller/functions/googleLogin.dart';
 import 'package:voice_assistant/controller/getxController.dart';
 import 'package:voice_assistant/screens/historyScreen/view/historyScreen.dart';
@@ -765,18 +766,16 @@ class _SettingScreenState extends State<SettingScreen> {
                       changeUserNameController.text,
                       getxObj.logInUserData[0]["Email_or_Phone"],
                     );
+                    await FirebaseController.updateProfile(context, "name", {
+                      "name": changeUserNameController.text,
+                      "email": getxObj.logInUserData[0]["Email_or_Phone"],
+                    });
                     Map<String, dynamic> mutableUser = {
                       ...getxObj.logInUserData[0],
                       "UserName": changeUserNameController.text,
                     };
                     getxObj.logInUserData[0] = mutableUser;
 
-                    showSnackbarFunction(
-                      context,
-                      "Name Changes Successfully",
-                      Colors.blue,
-                      Icons.check_circle,
-                    );
                     focusUserName.unfocus();
                   }
                 }
@@ -800,20 +799,28 @@ class _SettingScreenState extends State<SettingScreen> {
               ),
               side: BorderSide(color: Color(0xFF1E40FF), width: 0.8),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: const [
-                Icon(Icons.edit, size: 18),
-                SizedBox(width: 8),
-                Text(
-                  "Change Name",
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.3,
-                  ),
-                ),
-              ],
+            child: Obx(
+              () => getxObj.isLogedInLoader.value
+                  ? SizedBox(
+                      width: 30,
+                      height: 30,
+                      child: CircularProgressIndicator(color: Colors.blue),
+                    )
+                  : Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        Icon(Icons.edit, size: 18),
+                        SizedBox(width: 8),
+                        Text(
+                          "Change Name",
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                      ],
+                    ),
             ),
           ),
         ],
@@ -885,6 +892,10 @@ class _SettingScreenState extends State<SettingScreen> {
                       changeUserEmailController.text,
                       getxObj.logInUserData[0]["Email_or_Phone"],
                     );
+                    await FirebaseController.updateProfile(context, "email", {
+                      "changeEmail": changeUserEmailController.text,
+                      "email": getxObj.logInUserData[0]["Email_or_Phone"],
+                    });
                     Map<String, dynamic> mutableUser = {
                       ...getxObj.logInUserData[0],
                       "Email_or_Phone": changeUserEmailController.text,
@@ -919,20 +930,28 @@ class _SettingScreenState extends State<SettingScreen> {
               ),
               side: BorderSide(color: Color(0xFF1E40FF), width: 0.8),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: const [
-                Icon(Icons.edit, size: 18),
-                SizedBox(width: 8),
-                Text(
-                  "Change Email",
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.3,
-                  ),
-                ),
-              ],
+            child: Obx(
+              () => getxObj.isChangeEmailLoader.value
+                  ? SizedBox(
+                      width: 30,
+                      height: 30,
+                      child: CircularProgressIndicator(color: Colors.blue),
+                    )
+                  : Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        Icon(Icons.edit, size: 18),
+                        SizedBox(width: 8),
+                        Text(
+                          "Change Email",
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                      ],
+                    ),
             ),
           ),
         ],
@@ -1070,24 +1089,27 @@ class _SettingScreenState extends State<SettingScreen> {
           ElevatedButton(
             onPressed: () async {
               try {
-                if (fromkeyuserPassword.currentState!.validate() &&
-                    changeuserPasswordController.text ==
-                        getxObj.logInUserData[0]["Password"]) {
-                  await passwordChange(
-                    changeConfirmuserPasswordController.text,
-                    getxObj.logInUserData[0]["Email_or_Phone"],
-                  );
-                  showSnackbarFunction(
+                if (fromkeyuserPassword.currentState!.validate()) {
+                  // await passwordChange(
+                  //   changeConfirmuserPasswordController.text,
+                  //   getxObj.logInUserData[0]["Email_or_Phone"],
+                  // );
+                  final result = await FirebaseController.updateProfile(
                     context,
-                    "Password Changes Successfully",
-                    Colors.blue,
-                    Icons.check_circle,
+                    "password",
+                    {
+                      "oldpassword": changeuserPasswordController.text,
+                      "newpassword": changeConfirmuserPasswordController.text,
+                      "email": getxObj.logInUserData[0]["Email_or_Phone"],
+                    },
                   );
-                  focususerPassword.unfocus();
-                  focusConfirmuserPassword.unfocus();
-                  changeuserPasswordController.clear();
-                  changeConfirmuserPasswordController.clear();
-                  fromkeyuserPassword.currentState!.reset();
+                  if (result) {
+                    focususerPassword.unfocus();
+                    focusConfirmuserPassword.unfocus();
+                    changeuserPasswordController.clear();
+                    changeConfirmuserPasswordController.clear();
+                    fromkeyuserPassword.currentState!.reset();
+                  }
                 } else {
                   showSnackbarFunction(
                     context,
@@ -1116,20 +1138,28 @@ class _SettingScreenState extends State<SettingScreen> {
               ),
               side: BorderSide(color: Color(0xFF1E40FF), width: 0.8),
             ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: const [
-                Icon(Icons.edit, size: 18),
-                SizedBox(width: 8),
-                Text(
-                  "Change Password",
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 0.3,
-                  ),
-                ),
-              ],
+            child: Obx(
+              () => getxObj.isChangePasswordLoader.value
+                  ? SizedBox(
+                      width: 30,
+                      height: 30,
+                      child: CircularProgressIndicator(color: Colors.blue),
+                    )
+                  : Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: const [
+                        Icon(Icons.edit, size: 18),
+                        SizedBox(width: 8),
+                        Text(
+                          "Change Password",
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                      ],
+                    ),
             ),
           ),
         ],

@@ -6,12 +6,12 @@ import 'package:voice_assistant/controller/getxController.dart';
 import 'package:voice_assistant/controller/internetCheck/controller/internetCheckController.dart';
 import 'package:voice_assistant/controller/utils/screenTheme.dart';
 import 'package:voice_assistant/firebase_options.dart';
-import 'package:voice_assistant/screens/sharePreference/loginScreen.dart';
 import 'package:voice_assistant/screens/sharePreference/splashScreen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await InitializeDatabase().createDataBase();
+  await Firebase.initializeApp();
   runApp(MainWidget());
 }
 

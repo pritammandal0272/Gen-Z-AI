@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:voice_assistant/controller/dataBase/insertValueDB.dart';
 import 'package:voice_assistant/controller/dataBase/readValuesDB.dart';
+import 'package:voice_assistant/controller/firebaseController/firebaseController.dart';
 import 'package:voice_assistant/controller/functions/googleLogin.dart';
 import 'package:voice_assistant/controller/getxController.dart';
 import 'package:voice_assistant/screens/mainScreen.dart';
@@ -433,12 +434,16 @@ class SignUpBottomSheetState extends State<SignUpBottomSheet> {
                       ),
                       elevation: 0,
                     ),
-                    child: Text(
-                      'Sign Up',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+                    child: Obx(
+                      () => getxObj.isLogedInLoader.value
+                          ? CircularProgressIndicator(color: Colors.white)
+                          : Text(
+                              'Sign Up',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                     ),
                   ),
                 ),
@@ -561,36 +566,31 @@ class SignUpBottomSheetState extends State<SignUpBottomSheet> {
         Icons.info,
       );
     } else {
-      bool checkEmailExist = await checkUserExists(email);
-      if (checkEmailExist) {
-        final check = await insertValueDB(name, email, password, "");
-        if (check) {
-          showSnackbarFunction(
-            context,
-            "Account Create Successfully",
-            Colors.blue,
-            Icons.check_circle_outline,
-          );
-          await sp.setString("isEmail", email);
-          Get.offAll(
-            () => MainScreen(data: {"email": email}),
-            transition: Transition.zoom,
-          );
+      final signupData = {"name": name, "email": email, "password": password};
+
+      final result = await FirebaseController.signupFirebase(
+        context,
+        signupData,
+      );
+      if (result) {
+        bool checkEmailExist = await checkUserExists(email);
+        if (checkEmailExist) {
+          final check = await insertValueDB(name, email, password, "");
+          if (check) {
+            await sp.setString("isEmail", email);
+            Get.offAll(
+              () => MainScreen(data: {"email": email}),
+              transition: Transition.zoom,
+            );
+          }
         } else {
           showSnackbarFunction(
             context,
-            "Account Not Created!",
-            Colors.deepOrange,
+            "Email or Phone No allready Exits !!",
+            Colors.red,
             Icons.info,
           );
         }
-      } else {
-        showSnackbarFunction(
-          context,
-          "Email or Phone No allready Exits !!",
-          Colors.red,
-          Icons.info,
-        );
       }
     }
   }
